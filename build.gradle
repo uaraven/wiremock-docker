@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id "com.palantir.docker" version "0.20.1"
+    id "de.undercouch.download" version "4.0.2"
+}
+
+group 'com.loyalty.mock'
+version "1.0"
+
+ext {
+    wiremockVersion = "2.25.1"
+    mockServerFile = "wiremock-standalone-${wiremockVersion}.jar"
+    isDev = Boolean.getBoolean('dev')
+}
+
+
+task downloadServer(type: Download) {
+    src "http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/$wiremockVersion/$mockServerFile"
+    dest buildDir
+    overwrite false
+}
+
+
+def distFile = "$buildDir/$mockServerFile"
+def dockerImageName = isDev ? "wiremock-server" : "277983268692.dkr.ecr.us-east-1.amazonaws.com/wiremock-server"
+def dockerArgs = ['JAR_FILE': mockServerFile]
+
+docker {
+    dependsOn downloadServer
+    name "$dockerImageName"
+    files distFile, "${project.rootDir}/mock-run.sh"
+    buildArgs(dockerArgs)
+    tags wiremockVersion, "latest"
+}
+
+
+task publish {
+    dependsOn dockerPush
+}

@@ -1,0 +1,15 @@
+version: '3.7'
+
+# Describes the dependencies needed for the service to function
+services:
+  wiremock-server:
+    image: ovoronin/wiremock-server
+    container_name: wiremock-server
+    ports: 
+      - "8080:8080"
+    volumes:
+      - files:/opt/app/__files
+      - mappings:/opt/app/mappings
+volumes:
+  mappings:
+  files:
